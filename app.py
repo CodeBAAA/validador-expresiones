@@ -39,6 +39,7 @@ if st.button("Validar expresión"):
 # ============================================
 # SECCIÓN: RESULTADOS EN TIEMPO REAL
 # ============================================
+import pandas as pd
 
 st.header("📊 Resultados acumulados")
 
@@ -47,17 +48,19 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("✨ Expresiones válidas")
     if VALID_EXPRESSIONS:
-        st.table({"Expresión": VALID_EXPRESSIONS})
+        df_valid = pd.DataFrame({"Expresión": VALID_EXPRESSIONS})
+        st.dataframe(df_valid, use_container_width=True)
     else:
         st.info("Aún no hay expresiones válidas.")
 
 with col2:
     st.subheader("❌ Expresiones inválidas")
     if INVALID_EXPRESSIONS:
-        st.table({
+        df_invalid = pd.DataFrame({
             "Expresión": [e for e, m in INVALID_EXPRESSIONS],
             "Error": [m for e, m in INVALID_EXPRESSIONS]
         })
+        st.dataframe(df_invalid, use_container_width=True)
     else:
         st.info("Aún no hay expresiones inválidas.")
 
