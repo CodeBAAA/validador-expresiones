@@ -3,9 +3,3 @@ pandas
 numpy
 graphviz
 graphviz>=0.20.1
-validador_expresiones
-
-# validator
-# validator>=0.1.0
-#
-# Note: The 'validator' package is commented out because it is no longer used.
