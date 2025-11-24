@@ -172,46 +172,50 @@ class Parser:
             raise ParserError("La expresión no puede terminar con un operador")
 
     # ----- No terminales -----
-
-    def expr(self):
-        """E -> T ((+|-) T)*"""
-        self.term()
-        while True:
+    
+        def expr(self):
+            """E -> T ((+|-) T)*"""
+            value = self.term()
+            while self.current() and self.current().type in ("PLUS", "MINUS"):
+                op = self.current().type
+                self.eat((op,))
+                right = self.term()
+                if op == "PLUS":
+                    value += right
+                else:
+                    value -= right
+            return value
+    
+        def term(self):
+            """T -> F ((*|/) F)*"""
+            value = self.factor()
+            while self.current() and self.current().type in ("MUL", "DIV"):
+                op = self.current().type
+                self.eat((op,))
+                right = self.factor()
+                if op == "MUL":
+                    value *= right
+                else:
+                    if right == 0:
+                        raise ParserError("División entre 0 no permitida")
+                    value /= right
+            return value
+    
+        def factor(self):
+            """F -> NUMBER | '(' E ')'"""
             tok = self.current()
-            if tok and tok.type in ("PLUS", "MINUS"):
-                self.eat((tok.type,))
-                self.term()
-            else:
-                break
+            if tok.type == "NUMBER":
+                self.eat(("NUMBER",))
+                return float(tok.value)
+    
+            if tok.type == "LPAREN":
+                self.eat(("LPAREN",))
+                value = self.expr()
+                self.eat(("RPAREN",))
+                return value
+    
+            raise ParserError("Se esperaba número o '('")
 
-    def term(self):
-        """T -> F ((*|/) F)*"""
-        self.factor()
-        while True:
-            tok = self.current()
-            if tok and tok.type in ("MUL", "DIV"):
-                self.eat((tok.type,))
-                self.factor()
-            else:
-                break
-
-    def factor(self):
-        """F -> NUMBER | '(' E ')'"""
-        tok = self.current()
-        if tok is None:
-            raise ParserError("Factor incompleto al final de la expresión", position=self.pos)
-
-        if tok.type == "NUMBER":
-            self.eat(("NUMBER",))
-            return
-
-        if tok.type == "LPAREN":
-            self.eat(("LPAREN",))
-            self.expr()
-            self.eat(("RPAREN",))
-            return
-
-        raise ParserError("Se esperaba un número o '('", position=self.pos)
 
 
 # ==========================
@@ -343,3 +347,17 @@ if __name__ == "__main__":
 
     print("\n=== INICIANDO VISTA PREVIA INTERACTIVA ===\n")
     interactive_preview()
+def evaluate_expression(expr):
+    """Valida y evalúa una expresión."""
+    ok, msg = validate_expression(expr)
+    if not ok:
+        return False, msg, None
+
+    tokens = tokenize(expr)
+    parser = Parser(tokens)
+
+    try:
+        result = parser.expr()
+        return True, None, result
+    except ParserError as e:
+        return False, e.message, None

@@ -23,17 +23,15 @@ st.header("✏️ Probar una expresión")
 expr = st.text_input("Escribe una expresión:", placeholder="Ejemplo: (1+2)*3")
 
 if st.button("Validar expresión"):
-    if expr.strip() == "":
-        st.error("⚠️ Debes ingresar una expresión.")
-    else:
-        is_valid, msg = validate_expression(expr)
+    valid, error, result = validate_expression(expr)
 
-        if is_valid:
-            st.success(f"✅ La expresión es válida")
-            VALID_EXPRESSIONS.append(expr)
-        else:
-            st.error(f"❌ Expresión inválida: **{msg}**")
-            INVALID_EXPRESSIONS.append((expr, msg))
+    if valid:
+        st.success(f"✅ Expresión válida")
+        st.info(f"📌 Resultado: **{result}**")
+        VALID_EXPRESSIONS.append(expr)
+    else:
+        st.error(f"❌ Expresión inválida: {error}")
+        INVALID_EXPRESSIONS.append((expr, error))
 
 
 # ============================================
