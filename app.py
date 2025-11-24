@@ -1,5 +1,11 @@
 import streamlit as st
-from validador_expresiones import validate_expression, VALID_EXPRESSIONS, INVALID_EXPRESSIONS, probar_lista_expresiones
+from validador_expresiones import (
+    validate_expression,
+    evaluate_expression,
+    VALID_EXPRESSIONS,
+    INVALID_EXPRESSIONS,
+    probar_lista_expresiones
+)
 
 # ============================================
 # CONFIGURACIÓN DE LA APP
@@ -23,21 +29,23 @@ st.header("✏️ Probar una expresión")
 expr = st.text_input("Escribe una expresión:", placeholder="Ejemplo: (1+2)*3")
 
 if st.button("Validar expresión"):
-    valid, error, result = validate_expression(expr)
-
-    if valid:
-        st.success(f"✅ Expresión válida")
-        st.info(f"📌 Resultado: **{result}**")
-        VALID_EXPRESSIONS.append(expr)
+    if expr.strip() == "":
+        st.error("⚠️ Debes ingresar una expresión.")
     else:
-        st.error(f"❌ Expresión inválida: {error}")
-        INVALID_EXPRESSIONS.append((expr, error))
+        valid, error, result = evaluate_expression(expr)
+
+        if valid:
+            st.success("✅ La expresión es válida")
+            st.info(f"📌 **Resultado:** {result}")
+            VALID_EXPRESSIONS.append(expr)
+        else:
+            st.error(f"❌ Expresión inválida: **{error}**")
+            INVALID_EXPRESSIONS.append((expr, error))
 
 
 # ============================================
 # SECCIÓN: RESULTADOS EN TIEMPO REAL
 # ============================================
-import pandas as pd
 
 st.header("📊 Resultados acumulados")
 
@@ -46,21 +54,20 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("✨ Expresiones válidas")
     if VALID_EXPRESSIONS:
-        df_valid = pd.DataFrame({"Expresión": VALID_EXPRESSIONS})
-        st.dataframe(df_valid, use_container_width=True)
+        st.table({"Expresión": VALID_EXPRESSIONS})
     else:
         st.info("Aún no hay expresiones válidas.")
 
 with col2:
     st.subheader("❌ Expresiones inválidas")
     if INVALID_EXPRESSIONS:
-        df_invalid = pd.DataFrame({
+        st.table({
             "Expresión": [e for e, m in INVALID_EXPRESSIONS],
             "Error": [m for e, m in INVALID_EXPRESSIONS]
         })
-        st.dataframe(df_invalid, use_container_width=True)
     else:
         st.info("Aún no hay expresiones inválidas.")
+
 
 # ============================================
 # PRUEBAS AUTOMÁTICAS
