@@ -50,21 +50,34 @@ def tokenize(expr):
 
     tokens = []
     i = 0
+
     while i < len(expr):
         ch = expr[i]
 
+        # Ignorar espacios
         if ch.isspace():
             i += 1
             continue
 
+        # === NÚMEROS (con validación de ceros a la izquierda) ===
         if ch.isdigit():
             j = i
             while j < len(expr) and expr[j].isdigit():
                 j += 1
-            tokens.append(Token("NUMBER", expr[i:j]))
+
+            num = expr[i:j]
+
+            # ❗ Regla: NO permitir ceros a la izquierda
+            if len(num) > 1 and num[0] == "0":
+                raise ParserError(
+                    f"Números con ceros a la izquierda no están permitidos: '{num}'"
+                )
+
+            tokens.append(Token("NUMBER", num))
             i = j
             continue
 
+        # === OPERADORES Y PARÉNTESIS ===
         if ch in "+-*/()":
             TOK = {
                 "+": "PLUS",
@@ -80,7 +93,7 @@ def tokenize(expr):
 
         raise ParserError(f"Símbolo no permitido: '{ch}'")
 
-    # balance de paréntesis
+    # === BALANCE DE PARÉNTESIS ===
     balance = 0
     for t in tokens:
         if t.type == "LPAREN":
@@ -113,6 +126,7 @@ class Parser:
         if tok and tok.type in kinds:
             self.pos += 1
             return tok
+
         expected = " o ".join(kinds)
         got = tok.type if tok else "FIN"
         raise ParserError(f"Se esperaba {expected}, se encontró {got}")

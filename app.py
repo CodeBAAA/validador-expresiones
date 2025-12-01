@@ -17,7 +17,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🧠 Validador de Expresiones Aritméticas")
+st.title("🧠 Validador y Evaluador de Expresiones Aritméticas")
 st.write("Mini-lenguaje basado en gramática, autómata y pila. Compatible para compartir con otros.")
 
 # ============================================
@@ -93,6 +93,8 @@ if st.button("Correr casos de prueba"):
         "1+",
         "( )",
         "",
+        "05+2",      # ❌ debería fallar por ceros a la izquierda
+        "0003",      # ❌ debería fallar
     ]
 
     st.write("Ejecutando pruebas...")
